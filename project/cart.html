@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0"/>
+  <meta content="yes" name="apple-mobile-web-app-capable">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <meta content="telephone=no" name="format-detection">
+  <title>传智云购-购物车</title>
+  <link type="image/x-icon" rel="shortcut icon" href="images/favicon.ico">
+  <link rel="stylesheet" href="res/mui/css/mui.min.css"/>
+  <link rel="stylesheet" href="res/fontAwesome/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="css/common.css"/>
+  <link rel="stylesheet" href="css/cart.css"/>
+</head>
+<body>
+<div class="cz_layout">
+  <header class="cz_topBar">
+    <a href="javascript:history.back();" class="icon_back fa fa-arrow-left"></a>
+    <span class="title">购物车</span>
+    <a href="javascript:;" class="icon_refresh fa fa-refresh"></a>
+  </header>
+  <!-- 让刷新的内容显示-->
+  <style>
+    .cz_container {
+      padding-top: 0;
+      padding-bottom: 0;
+      top: 45px;
+      bottom: 80px;
+    }
+  </style>
+  <div class="cz_container mui-scroll-wrapper">
+    <ul class="mui-table-view mui-scroll" id="cart-detail">
+
+    </ul>
+    <div class="cart_order">订单总额：&yen;1022.00 <a href="#">生成订单</a></div>
+  </div>
+  <footer class="cz_tabs">
+    <a class="tab_home fa fa-home" href="index.html"><span>首页</span></a>
+    <a class="tab_cate fa fa-bars" href="cate.html"><span>分类</span></a>
+    <a class="tab_cart fa fa-shopping-cart now" href="cart.html"><span>购物车</span></a>
+    <a class="tab_user fa fa-user" href="user/index.html"><span>会员中心</span></a>
+  </footer>
+</div>
+<script type="text/x-handlebars-template" id="tmp">
+  {{each data}}
+  <li data-product="" class="mui-table-view-cell">
+    <div class="mui-slider-right mui-disabled">
+      <a class="mui-btn mui-btn-blue">编辑</a>
+      <a class="mui-btn mui-btn-red">删除</a>
+    </div>
+    <a href="javascript:;" class="mui-navigate-right mui-slider-handle">
+      <img class="mui-media-object mui-pull-left" src="/api{{$value.pic[0].picAddr}}">
+      <div class="mui-media-body">
+        <p class="name">{{$value.proName}}</p>
+        <p class="info">
+          <span class="price">&yen;{{$value.price}}</span>
+          <span class="oldPrice">&yen;{{$value.oldPrice}}</span>
+          <span class="number">x{{$value.num}}</span>
+        </p>
+        <p><span class="size">鞋码：{{$value.size}}</span></p>
+      </div>
+      <input type="checkbox"/>
+    </a>
+  </li>
+  {{/each}}
+</script>
+<script src="js/template-web.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="res/mui/js/mui.min.js"></script>
+<script>
+  // 页面加载时需要发送ajax请求实现第一页的显示
+  mui(function () {
+    // 初始化page,pagesize
+    var page = 1, pageSize = 5
+    mui.init({
+      pullRefresh: {
+        container: ".cz_container",
+        // 下拉刷新
+        down: {
+          contentdown: "下拉可以刷新",
+          contentover: "释放立即刷新",
+          contentrefresh: "正在刷新...",
+          auto: true,
+          callback: function () {
+
+            // 发送ajax获取页面数据(接口为query-cart-Paging)
+            $.get('/api/cart/queryCartPaging', {
+              page: 1,
+              pageSize: pageSize,
+            }, function (data) {
+              console.log(data)
+              var html = template('tmp', data)
+              $('#cart-detail').html(html)
+
+              // 结束下拉刷新
+              mui('.cz_container').pullRefresh().endPulldownToRefresh();
+              // 每次下拉初始化page
+              page = 1
+              mui('.cz_container').pullRefresh().enablePullupToRefresh()
+            })
+          }
+        },
+
+        // 上拉加载
+        up: {
+          height: 50,
+          auto: false,
+          contentrefresh: "正在加载...",
+          contentnomore: '没有更多数据了',
+          callback: function () {
+            page++
+            // 添加新的内容
+            $.get('/api/cart/queryCartPaging', {
+              page: page,
+              pageSize: pageSize,
+            }, function (data) {
+              if (data.length === 0) {
+                // 结束上拉加载
+                // 传参true时表示数据已加载完毕
+                setTimeout(function () {
+                  mui('.cz_container').pullRefresh().endPullupToRefresh(true)
+                }, 500)
+                return
+              }
+              var html = template('tmp', data)
+              $('#cart-detail').append(html)
+
+
+              // 结束上拉加载
+              setTimeout(function () {
+                mui('.cz_container').pullRefresh().endPullupToRefresh()
+              }, 500)
+            })
+
+          }
+        }
+      }
+    });
+
+  });
+</script>
+</body>
+</html>

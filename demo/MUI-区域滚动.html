@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MUI-区域滚动</title>
+  <link rel="stylesheet" href="mui/css/mui.min.css">
+</head>
+<body>
+<div class="mui-scroll-wrapper">
+  <div class="mui-scroll">
+    <!--这里放置真实显示的DOM内容-->
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+    <p>1123</p>
+  </div>
+</div>
+<script src="mui/js/mui.min.js"></script>
+<script>
+  mui('.mui-scroll-wrapper').scroll({
+    deceleration: 0.0005 //flick 减速系数，系数越大，滚动速度越慢，滚动距离越小，默认值0.0006
+  });
+</script>
+</body>
+</html>

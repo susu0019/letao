@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0"/>
+  <meta content="yes" name="apple-mobile-web-app-capable">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <meta content="telephone=no" name="format-detection">
+  <title>传智云购-搜索中心</title>
+  <link type="image/x-icon" rel="shortcut icon" href="images/favicon.ico">
+  <link rel="stylesheet" href="res/mui/css/mui.min.css"/>
+  <link rel="stylesheet" href="res/fontAwesome/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="css/common.css"/>
+  <link rel="stylesheet" href="css/product.css"/>
+</head>
+<body>
+<div class="cz_layout">
+  <header class="cz_topBar">
+    <a href="javascript:history.back();" class="icon_back fa fa-arrow-left"></a>
+    <span class="title">商品详情</span>
+    <a href="index.html" class="icon_home fa fa-home"></a>
+  </header>
+  <div class="cz_container ">
+    <div class="mui-scroll-wrapper">
+      <div class="mui-scroll">
+        <!--动态渲染内容-->
+        <div class="detail-con">
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="p_option">
+    <a href="/cart.html" class="btn_cart fa fa-shopping-cart"></a>
+    <a href="javascript:;" class="btn_addCart">加入购物车</a>
+    <a href="#" class="btn_pay">立即购买</a>
+  </div>
+</div>
+
+<!--模板-->
+<script type="text/x-handlebars-template" id="tmp">
+  <div class="cz_banner mui-slider">
+    <div class="mui-slider-group mui-slider-loop">
+      <div class="mui-slider-item mui-slider-item-duplicate">
+        <a href="#"><img src="/api{{pic[0].picAddr}}"></a>
+      </div>
+      <div class="mui-slider-item mui-active">
+        <a href="#"><img src="/api{{pic[0].picAddr}}"></a>
+      </div>
+      <div class="mui-slider-item mui-active">
+        <a href="#"><img src="/api{{pic[0].picAddr}}"></a>
+      </div>
+      <div class="mui-slider-item mui-slider-item-duplicate">
+        <a href="#"><img src="/api{{pic[0].picAddr}}"></a>
+      </div>
+    </div>
+    <div class="mui-slider-indicator">
+      <div class="mui-indicator mui-active"></div>
+      <div class="mui-indicator"></div>
+    </div>
+  </div>
+  <div class="p_title">
+    {{proName}}
+  </div>
+  <div class="p_price">
+    <span class="fold"><span>{{discount}}</span>折</span>
+    价格：<strong class="present">¥
+    {{price}}</strong>
+    <del class="original">¥{{oldPrice}}</del>
+  </div>
+  <div class="p_size">
+    尺码：
+    {{each sizeCount}}
+    <span class="btn_size">{{$value}}</span>
+    {{/each}}
+  </div>
+  <div class="p_number">
+    数量：
+    <span class="jian btn_act">-</span><input type="tel" value="1"/><span class="jia btn_act">+</span>
+    剩余：<span class="residue">{{num}}</span> 件
+  </div>
+</script>
+<script src="res/mui/js/mui.min.js"></script>
+<script src="res/mui/js/mui.lazyload.js"></script>
+<script src="res/mui/js/mui.lazyload.img.js"></script>
+<script src="js/template-web.js"></script>
+<script src="js/jquery.min.js"></script>
+<script>
+  // 详情页功能实现
+  // 功能1：根据url传递的id动态渲染页面
+  var id = location.search.slice(1).split('=')[1]
+  $.ajax({
+    url: '/api/product/queryProductDetail',
+    data: {id: id},
+    success: function (data) {
+      // 得到具体鞋子尺寸，放于数组中，再添加到data中
+      data.sizeCount = data.size.split('-')
+      // 计算折扣(小数点后取一位小数-num.toFixed(1))，再添加到data中
+      data.discount = (data.price / data.oldPrice * 10).toFixed(1)
+      var html = template('tmp', data)
+      $('.detail-con').html(html)
+
+      // 将滚动放到页面渲染之后执行，保证页面先进行渲染
+      mui(function () {
+        mui('.mui-slider').slider({
+          interval: 3000 //自动轮播周期，若为0则不自动播放，默认为0；
+        });
+        mui('.mui-scroll-wrapper').scroll();
+      });
+    }
+  })
+
+  // 实现产品数量的增减
+  $('.detail-con').on('click', '.btn_act', function () {
+    // 获取数量
+    var input = $(this).siblings('input')
+    var n = input.val()
+
+    if ($(this).is('.jia')) {
+      // 加
+      return input.val(++n)
+    }
+    // 减
+    if (n <= 1) return
+    input.val(--n)
+  })
+
+  // 实现尺码选择
+  $('.detail-con').on('click', '.btn_size', function () {
+    $(this).addClass('active').siblings().removeClass('active')
+    $(this).css('backgroundColor', 'pink').siblings().css('backgroundColor', '#fff')
+  })
+
+  // 功能2：加入购物车
+  $('.btn_addCart').on('click', function () {
+    var productId = id
+    var num = $('.p_number input').val()
+    var size = $('span.active').text()
+    if (!size) return mui.alert('请选鞋子尺码！',
+      '提示',
+      '确定',)
+    console.log(size)
+    $.post('/api/cart/addCart', {
+      productId: productId,
+      num: num,
+      size: size
+    }, function (data) {
+      if (data.error) {
+        mui.alert(
+          '请先登录！',
+          '提示',
+          '确定',
+          function () {
+            location.href = '/user/login.html?url=' + location.href;
+          }
+        )
+        return
+      }
+      mui.toast('加入成功')
+    })
+  })
+
+
+</script>
+
+</body>
+</html>
